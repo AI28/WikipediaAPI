@@ -2,6 +2,8 @@ import re
 
 from bs4 import BeautifulSoup
 
+from itertools import takewhile
+
 from Scraper.DocumentGetter import DocumentGetter
 
 
@@ -141,19 +143,26 @@ class CountryDataScrapper(DocumentScrapper):
         elif area_element.find("td") is None:
             return -1
 
-        match =  re.match(milions_re,area_element.find("td").text)
+        match = re.match(milions_re, area_element.find("td").text)
 
         if match is None:
             return -1
         elif match.group(0) is None:
             return -1
 
-        return int(match.group(0).replace(",",""))
+        return int(match.group(0).replace(",", ""))
+
     def get_neighbours(self):
+
         if self.__country_card is None:
             self.scrap_document()
 
-        return self.__country_card.find_all(text = re.compile("surrounded|borders"))
+        temp = list(map(lambda x: x.find_next_siblings(),
+                        self._parser.find_all(string=re.compile("(bordered|surrounded|shares|borders)"))))
+        temp2 = [item.text for sublist in temp for item in sublist if item.text.isalpha() is True and item.text[0].isupper() is True]
+        return temp2
+
+        return None
 
     def get_time_zone(self):
 
