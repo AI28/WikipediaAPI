@@ -2,9 +2,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-from itertools import takewhile
-
-from Scraper.DocumentGetter import DocumentGetter
+from scrapper.document_getter import DocumentGetter
 
 
 class DocumentScrapper:
@@ -110,7 +108,7 @@ class CountryDataScrapper(DocumentScrapper):
 
         t = set(self.get_country_card().find_all(title=re.compile("language$")))
 
-        return list(map(lambda x: x.text, t))
+        return list(filter(lambda x: re.match("language", x) is None, map(lambda x: x.text, t)))
 
     def get_country_government(self):
         if self.__country_card is None:
@@ -159,7 +157,8 @@ class CountryDataScrapper(DocumentScrapper):
 
         temp = list(map(lambda x: x.find_next_siblings(),
                         self._parser.find_all(string=re.compile("(bordered|surrounded|shares|borders)"))))
-        temp2 = [item.text for sublist in temp for item in sublist if item.text.isalpha() is True and item.text[0].isupper() is True]
+        temp2 = [item.text for sublist in temp for item in sublist if
+                 item.text.isalpha() is True and item.text[0].isupper() is True]
         return temp2
 
         return None

@@ -1,21 +1,47 @@
-# This is a sample Python script.
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
 import json
 
-from Scraper.DocumentScrapper import ListOfCountriesScrapper, CountryDataScrapper
+from scrapper.document_scrapper import ListOfCountriesScrapper, CountryDataScrapper
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
+
+def initialize_countries_map(list_of_countries):
+
+    countries_map = {}
+
+    for j in list_of_countries.get_elements():
+
+        country_informal_name = j.split('/')[-1]
+
+        if country_informal_name in countries_map:
+            continue
+        elif country_informal_name == "Zaire":
+            continue
+
+        countries_map[country_informal_name] = ""
+
+    return countries_map
+
+
+def generate_countries_map():
+    country_map = {}
 
     try:
+
         list_of_countries = ListOfCountriesScrapper("https://en.wikipedia.org/wiki/List_of_sovereign_states")
         wiki = "https://en.wikipedia.org"
+
+        country_map = initialize_countries_map(list_of_countries)
+
         for j in list_of_countries.get_elements():
 
-            aux = CountryDataScrapper(wiki + j)
+            country_informal_name = j.split('/')[-1]
 
+            if country_map[country_informal_name] != "":
+                continue
+            elif country_informal_name == "Zaire":
+                continue
+
+            aux = CountryDataScrapper(wiki + j)
             if aux.get_country_card() is None:
                 continue
 
@@ -30,27 +56,29 @@ if __name__ == '__main__':
             country_language = aux.get_country_language()
             country_time_zone = aux.get_time_zone()
             country_population_density = None
-            country_neighbours = aux.get_neighbours()
+            country_neighbours = list(set(filter(lambda x: x in country_map, aux.get_neighbours())))
 
             if country_population is None or country_area is None:
                 country_population_density = 0
+            else:
+                country_population_density = country_population // country_area
 
-            country_population_density = country_population // country_area
-
-            print(country_area)
-            print(country_name)
-            print(country_population)
-            print(country_government)
-            print(country_language)
-            print(country_time_zone)
-            print(country_population_density)
-
-            t2 = {"name": country_name, "area": country_area, "population": country_population,
+            t2 = {"name": country_name, "capital": country_capital, "area": country_area, "population": country_population,
                   "government": country_government, "languages": country_language, "timezone": country_time_zone,
                   "density": country_population_density, "neighbours": country_neighbours}
 
-            print(json.dumps(t2))
+            country_map[country_informal_name] = t2
+            country_serialization = json.dumps(t2)
+
+            open("serialized_countries/%s.json" % country_informal_name, "wt").write(country_serialization)
 
 
     except Exception as e:
         print(str(e))
+
+    return country_map
+
+
+# Press the green button in the gutter to run the script.
+if __name__ == '__main__':
+    generate_countries_map()

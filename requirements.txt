@@ -1,0 +1,7 @@
+Flask~=1.1.2
+requests~=2.25.0
+beautifulsoup4~=4.9.3
+sqlite3
+re
+json
+click~=7.1.2
