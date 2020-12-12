@@ -1,9 +1,9 @@
 import sqlite3
-
 import click
 from flask import current_app
 from flask import g
 from flask.cli import with_appcontext
+import api.scrapper.mediator
 
 
 def get_db():
@@ -47,9 +47,18 @@ def init_db_command():
     click.echo("Initialized the database.")
 
 
+@click.command("scrape")
+@with_appcontext
+def scrap_wiki():
+    """
+    Begin data mining process.
+    """
+    api.scrapper.mediator.generate_countries_map()
+
 def init_app(app):
     """Register database functions with the Flask app. This is called by
     the application factory.
     """
     app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
+    app.cli.add_command(scrap_wiki)

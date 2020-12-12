@@ -2,7 +2,7 @@ import re
 
 from bs4 import BeautifulSoup
 
-from scrapper.document_getter import DocumentGetter
+from api.scrapper.document_getter import DocumentGetter
 
 
 class DocumentScrapper:

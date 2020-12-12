@@ -1,7 +1,8 @@
 import os
 from json import JSONDecoder
-from flask import Flask, request
+from flask import Flask, request, abort
 from api import db
+
 
 def create_app(test_config=None):
     """Create and configure an instance of the Flask application."""
@@ -25,12 +26,12 @@ def create_app(test_config=None):
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
     db.init_app(app)
 
     @app.route("/hello")
     def hello():
         return "Hello, World!"
-
 
     @app.route("/get/<string:name>", methods=["GET"])
     def get_country(name):
@@ -39,7 +40,7 @@ def create_app(test_config=None):
         country = database.execute("SELECT * FROM countries WHERE name = ?", (name,)).fetchone()
 
         if country is None:
-            abort(404, f"There is no country named {name}")
+            abort(404)
 
         return country
 
