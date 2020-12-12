@@ -1,6 +1,4 @@
-
 import json
-
 from scrapper.document_scrapper import ListOfCountriesScrapper, CountryDataScrapper
 
 
@@ -69,7 +67,6 @@ def generate_countries_map():
 
             country_map[country_informal_name] = t2
             country_serialization = json.dumps(t2)
-
             open("serialized_countries/%s.json" % country_informal_name, "wt").write(country_serialization)
 
 
@@ -78,7 +75,3 @@ def generate_countries_map():
 
     return country_map
 
-
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    generate_countries_map()
