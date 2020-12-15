@@ -1,1 +1,2 @@
-Consider ca scrapperul e apoape gata, mai trebuie sa curat putin output-ul si sa adaug si o metoda pt. preluarea tarilor vecine.
+States of the World. 21A
+Implemented: Beautiful soup based scrapper + MongoDB Serialisation + Exposed - through Flask- routes for getting top 10 countries by area, population and density and for getting countries in which a particular language is spoken or a particular political regime is in force.
