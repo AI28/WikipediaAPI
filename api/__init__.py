@@ -1,7 +1,5 @@
 import os
-from json import JSONDecoder
-from flask import Flask, request, abort
-from api import db
+from flask import Flask
 
 
 def create_app(test_config=None):
@@ -11,7 +9,6 @@ def create_app(test_config=None):
         # a default secret that should be overridden by instance config
         SECRET_KEY="dev",
         # store the database in the instance folder
-        DATABASE=os.path.join(app.instance_path, "api.sqlite"),
     )
 
     if test_config is None:
@@ -27,33 +24,38 @@ def create_app(test_config=None):
     except OSError:
         pass
 
+    from api import db
+
     db.init_app(app)
+    mongo = db.get_db(app)
 
-    @app.route("/hello")
-    def hello():
-        return "Hello, World!"
+    @app.route("/top10/<field>")
+    def top10(field):
+        wikipedia = mongo.db["wikipedia"]
+        countries = wikipedia["countires"]
+        doc_result = countries.find({}, {"_id": 0, "name": 1, field: 1}).sort(field, -1).limit(10)
+        return (list(doc_result)).__str__()
 
-    @app.route("/get/<string:name>", methods=["GET"])
-    def get_country(name):
+    @app.route("/get-by/language/<language>")
+    def get_by_language(language):
+        wikipedia = mongo.db["wikipedia"]
+        countries = wikipedia["countires"]
+        doc_result = countries.find({"languages":language}, {"_id": 0, "name": 1})
+        return (list(doc_result)).__str__()
 
-        database = db.get_db()
-        country = database.execute("SELECT * FROM countries WHERE name = ?", (name,)).fetchone()
+    @app.route("/get-by/regime/<regime>")
+    def get_by_regime(regime):
+        wikipedia = mongo.db["wikipedia"]
+        countries = wikipedia["countires"]
+        doc_result = countries.find({"government":regime}, {"_id": 0, "name": 1})
+        return (list(doc_result)).__str__()
 
-        if country is None:
-            abort(404)
+    @app.route("/get/<name>")
+    def get_by_name(name):
 
-        return country
-
-    @app.route("/post/country", methods=["POST"])
-    def post_country():
-
-        database = db.get_db()
-        country = request.json
-        print(country["name"])
-        print(country["population"])
-        print(country["area"])
-        print(type(country))
-        print("test")
-        return country["name"]
+        wikipedia = mongo.db["wikipedia"]
+        countries = wikipedia["countires"]
+        doc_result = countries.find_one({"name": name}, {"_id": 0, "name": 1, "languages": 1})
+        return doc_result
 
     return app

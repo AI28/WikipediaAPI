@@ -1,49 +1,46 @@
-import sqlite3
+import os.path
 import click
-from flask import current_app
-from flask import g
+import json
 from flask.cli import with_appcontext
+from flask.cli import current_app
+from flask_pymongo import PyMongo
+from flask import g
 import api.scrapper.mediator
 
 
-def get_db():
-    """Connect to the application's configured database. The connection
-    is unique for each request and will be reused if this is called
-    again.
-    """
+def init_db(app, put_values=False):
+    app.config["MONGO_URI"] = "mongodb://localhost:27017/wikipedia"
+    mongo = PyMongo(app)
 
-    if "db" not in g:
-        g.db = sqlite3.connect(
-            current_app.config["DATABASE"], detect_types=sqlite3.PARSE_DECLTYPES
-        )
-        g.db.row_factory = sqlite3.Row
+    if put_values:
+        init_with_values()
 
-    return g.db
+    return mongo
 
 
-def close_db(e=None):
-    """If this request connected to the database, close the
-    connection.
-    """
-    db = g.pop("db", None)
+def get_db(app):
+    with app.app_context():
+        if 'db' not in g:
+            g.db = init_db(app)
 
-    if db is not None:
-        db.close()
+        return g.db
 
 
-def init_db():
-    """Clear existing data and create new tables."""
-    db = get_db()
+def init_with_values():
+    wikipedia = get_db().db["wikipedia"]
+    countries = wikipedia["countries"]
 
-    with current_app.open_resource("schema.sql") as f:
-        db.executescript(f.read().decode("utf8"))
+    for (root, directories, files) in os.walk("serialized_countries"):
+        for fileName in files:
+            file_content = open((os.path.join(root, fileName)), "r").read()
+            countries.insert_one(json.loads(file_content))
 
 
 @click.command("init-db")
 @with_appcontext
 def init_db_command():
     """Clear existing data and create new tables."""
-    init_db()
+    init_with_values(current_app, True)
     click.echo("Initialized the database.")
 
 
@@ -55,10 +52,10 @@ def scrap_wiki():
     """
     api.scrapper.mediator.generate_countries_map()
 
+
 def init_app(app):
     """Register database functions with the Flask app. This is called by
     the application factory.
     """
-    app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)
     app.cli.add_command(scrap_wiki)
