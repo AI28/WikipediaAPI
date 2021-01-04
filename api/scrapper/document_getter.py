@@ -3,8 +3,6 @@ import re
 
 
 class DocumentGetter:
-    _url = None
-
     def __init__(self, url):
 
         validation_regex = re.compile("^https://en.wikipedia.org(.)*")

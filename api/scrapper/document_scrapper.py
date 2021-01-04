@@ -6,9 +6,6 @@ from api.scrapper.document_getter import DocumentGetter
 
 
 class DocumentScrapper:
-    _document_getter = None
-    _document = None
-    _parser = None
 
     def __init__(self, url):
 
@@ -26,7 +23,6 @@ class DocumentScrapper:
 
 
 class ListOfCountriesScrapper(DocumentScrapper):
-    __elements = None
 
     def __init__(self, url):
         super().__init__(url)
@@ -46,7 +42,6 @@ class ListOfCountriesScrapper(DocumentScrapper):
 
 
 class CountryDataScrapper(DocumentScrapper):
-    __country_card = None
 
     def __init__(self, url):
         super().__init__(url)
@@ -57,8 +52,9 @@ class CountryDataScrapper(DocumentScrapper):
         self.__country_card = self._parser.find('table', class_="infobox geography vcard")
 
     def get_country_name(self):
-
-        """return super()._document_getter.get_url().split('/')[-1]"""
+        """
+        If the document doesn't contain a html element of class country-name, return Null. Otherwise, return the said element's text.
+        """
         if self.__country_card is None:
             self.scrap_document()
 
@@ -151,7 +147,11 @@ class CountryDataScrapper(DocumentScrapper):
         return int(match.group(0).replace(",", ""))
 
     def get_neighbours(self):
-
+        """
+        Test if the object's country card is initialized. If the test fails, initialize it.
+        After that, get the sentence of the wikipedia article which contains words particular to a statement describing a country's neighbours.
+        Return the country names found in the sentence.
+        """
         if self.__country_card is None:
             self.scrap_document()
 
@@ -161,19 +161,47 @@ class CountryDataScrapper(DocumentScrapper):
                  item.text.isalpha() is True and item.text[0].isupper() is True]
         return temp2
 
-        return None
-
     def get_time_zone(self):
-
+        """
+        Return the text field containing the keywords UTC or GMT.
+        """
         if self.__country_card is None:
             self.scrap_document()
 
         time_zone_element = self.__country_card.find_all(text=re.compile("(UTC|GMT)"))[0].find_parent().find_parent()
+        separator = ""
+
+        if ";" in time_zone_element.text:
+            separator = ";"
+
+        if "to" in time_zone_element.text:
+            separator = "to"
+
+        if separator != "":
+            aux_timezones = time_zone_element.text.split(separator)
+            timezones = list(map(lambda x: "".join(filter(lambda x: x.isdigit() or x == ".", x)), aux_timezones))
+
+            first = int(float(timezones[0]))
+            last = int(float(timezones[-1]))
+
+            plus_or_minus = ''
+            if "+" in aux_timezones[0]:
+                plus_or_minus = "+"
+            else:
+                plus_or_minus = "-"
+
+            if first < last:
+                timezones = list(range(first, last + 1))
+            else:
+                timezones = list(range(last, first + 1))
+
+            timezones = list(map(lambda x: plus_or_minus + str(x), timezones))
+
+            return timezones
 
         return time_zone_element.text
 
     def get_country_card(self):
-
         if self.__country_card is None:
             self.scrap_document()
 

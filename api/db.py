@@ -45,12 +45,16 @@ def init_db_command():
 
 
 @click.command("scrape")
+@click.argument("country-name")
 @with_appcontext
-def scrap_wiki():
+def scrap_wiki(country_name):
     """
     Begin data mining process.
     """
-    api.scrapper.mediator.generate_countries_map()
+    if country_name is None:
+        api.scrapper.mediator.generate_countries_map()
+    api.scrapper.mediator.get_country_by_name(country_name)
+
 
 
 def init_app(app):

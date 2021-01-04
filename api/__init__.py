@@ -50,6 +50,13 @@ def create_app(test_config=None):
         doc_result = countries.find({"government":regime}, {"_id": 0, "name": 1})
         return (list(doc_result)).__str__()
 
+    @app.route("/get-by/timezone/<timezone>")
+    def get_by_timezone(timezone):
+        wikipedia = mongo.db["wikipedia"]
+        countries = wikipedia["countires"]
+        doc_result = countries.find({"timezone": timezone}, {"_id": 0, "name": 1})
+        return (list(doc_result)).__str__()
+
     @app.route("/get/<name>")
     def get_by_name(name):
 

@@ -20,6 +20,47 @@ def initialize_countries_map(list_of_countries):
     return countries_map
 
 
+def get_country_by_name(name):
+
+    wiki = "https://en.wikipedia.org/wiki/"
+
+    aux = CountryDataScrapper(wiki + name)
+
+    print(wiki + name)
+
+    if aux.get_country_card() is None:
+        return
+
+    country_name = aux.get_country_name()
+    if country_name is None:
+        return
+
+    country_area = aux.get_country_area()
+    country_capital = aux.get_country_capital()
+    country_population = aux.get_country_population()
+    country_government = aux.get_country_government()
+    country_language = aux.get_country_language()
+    country_time_zone = aux.get_time_zone()
+    country_population_density = None
+    country_neighbours = None
+
+    if country_population is None or country_area is None:
+        country_population_density = 0
+    else:
+        country_population_density = country_population // country_area
+
+    t2 = {"name": country_name, "capital": country_capital, "area": country_area, "population": country_population,
+          "government": country_government, "languages": country_language, "timezone": country_time_zone,
+          "density": country_population_density, "neighbours": country_neighbours}
+
+    country_serialization = json.dumps(t2)
+    print(country_serialization)
+
+    if os.path.exists("serialized_countries") is False:
+        os.mkdir("serialized_countries")
+    open("serialized_countries/%s.json" % name, "wt").write(country_serialization)
+
+
 def generate_countries_map():
     country_map = {}
 
