@@ -3,7 +3,10 @@ import os
 from api.scrapper.document_scrapper import ListOfCountriesScrapper, CountryDataScrapper
 
 def initialize_countries_map(list_of_countries):
-
+    """
+    Helper function used in the two functions bellow.
+    Initialises an empty country dictionary, avoiding duplicates.
+    """
     countries_map = {}
 
     for j in list_of_countries.get_elements():
@@ -21,7 +24,10 @@ def initialize_countries_map(list_of_countries):
 
 
 def get_country_by_name(name):
-
+    """
+    Generates a dictionary for and single country and serializes it.
+    Used for testing purposes. May remove it.
+    """
     wiki = "https://en.wikipedia.org/wiki/"
 
     aux = CountryDataScrapper(wiki + name)
@@ -62,6 +68,12 @@ def get_country_by_name(name):
 
 
 def generate_countries_map():
+    """
+    Creates and populates a dictionary datastructure where the keys are the countries' names and the values are
+    themselves dictionaries containing the countries' various characteristics. It also serialises each dictionary
+    entry into a <key_name>.json file.
+    """
+
     country_map = {}
 
     try:

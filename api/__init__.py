@@ -32,28 +32,28 @@ def create_app(test_config=None):
     @app.route("/top10/<field>")
     def top10(field):
         wikipedia = mongo.db["wikipedia"]
-        countries = wikipedia["countires"]
+        countries = wikipedia["countries"]
         doc_result = countries.find({}, {"_id": 0, "name": 1, field: 1}).sort(field, -1).limit(10)
         return (list(doc_result)).__str__()
 
     @app.route("/get-by/language/<language>")
     def get_by_language(language):
         wikipedia = mongo.db["wikipedia"]
-        countries = wikipedia["countires"]
+        countries = wikipedia["countries"]
         doc_result = countries.find({"languages":language}, {"_id": 0, "name": 1})
         return (list(doc_result)).__str__()
 
     @app.route("/get-by/regime/<regime>")
     def get_by_regime(regime):
         wikipedia = mongo.db["wikipedia"]
-        countries = wikipedia["countires"]
+        countries = wikipedia["countries"]
         doc_result = countries.find({"government":regime}, {"_id": 0, "name": 1})
         return (list(doc_result)).__str__()
 
     @app.route("/get-by/timezone/<timezone>")
     def get_by_timezone(timezone):
         wikipedia = mongo.db["wikipedia"]
-        countries = wikipedia["countires"]
+        countries = wikipedia["countries"]
         doc_result = countries.find({"timezone": timezone}, {"_id": 0, "name": 1})
         return (list(doc_result)).__str__()
 
@@ -61,8 +61,8 @@ def create_app(test_config=None):
     def get_by_name(name):
 
         wikipedia = mongo.db["wikipedia"]
-        countries = wikipedia["countires"]
+        countries = wikipedia["countries"]
         doc_result = countries.find_one({"name": name}, {"_id": 0, "name": 1, "languages": 1})
-        return doc_result
+        return (list(doc_result)).__str__()
 
     return app

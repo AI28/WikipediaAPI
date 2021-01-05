@@ -9,16 +9,20 @@ import api.scrapper.mediator
 
 
 def init_db(app, put_values=False):
+    """Internal implementation of the initialize database cli command."""
     app.config["MONGO_URI"] = "mongodb://localhost:27017/wikipedia"
     mongo = PyMongo(app)
 
     if put_values:
-        init_with_values()
+        init_with_values(app)
 
     return mongo
 
 
 def get_db(app):
+    """
+    Function that returns, implementing the Singleton design pattern, the global database instance.
+    """
     with app.app_context():
         if 'db' not in g:
             g.db = init_db(app)
@@ -26,8 +30,11 @@ def get_db(app):
         return g.db
 
 
-def init_with_values():
-    wikipedia = get_db().db["wikipedia"]
+def init_with_values(app):
+    """
+    Inserts the json serialisation of the scrapped countries in the database.
+    """
+    wikipedia = get_db(app).db["wikipedia"]
     countries = wikipedia["countries"]
 
     for (root, directories, files) in os.walk("serialized_countries"):
@@ -39,8 +46,8 @@ def init_with_values():
 @click.command("init-db")
 @with_appcontext
 def init_db_command():
-    """Clear existing data and create new tables."""
-    init_with_values(current_app, True)
+    """Initializes the database, optionally inserting data."""
+    init_db(current_app, True)
     click.echo("Initialized the database.")
 
 
@@ -50,9 +57,12 @@ def init_db_command():
 def scrap_wiki(country_name):
     """
     Begin data mining process.
+    scrape <country-name> - gets a specific country
+    scrape all - gets all sovereign states.
     """
-    if country_name is None:
+    if country_name == "all":
         api.scrapper.mediator.generate_countries_map()
+        return
     api.scrapper.mediator.get_country_by_name(country_name)
 
 

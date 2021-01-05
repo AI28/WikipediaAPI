@@ -1,7 +1,5 @@
 import re
-
 from bs4 import BeautifulSoup
-
 from api.scrapper.document_getter import DocumentGetter
 
 
@@ -35,6 +33,10 @@ class ListOfCountriesScrapper(DocumentScrapper):
                            and item.attrs["title"] == item.string]
 
     def get_elements(self):
+
+        if not hasattr(self, '__elements'):
+            self.__scrap_document()
+
         if self.__elements is None:
             self.__scrap_document()
 
@@ -66,7 +68,7 @@ class CountryDataScrapper(DocumentScrapper):
         return self.__country_card.find(class_="country-name").text
 
     def get_country_capital(self):
-
+        """Gets the country capital's name."""
         if self.__country_card is None:
             return None
 
@@ -78,7 +80,9 @@ class CountryDataScrapper(DocumentScrapper):
         return t.find_parent().find_next_sibling().find("a").text
 
     def get_country_population(self):
-
+        """
+        Gets the country's population using a regex that matches numbers in the order of millions.
+        """
         if self.__country_card is None:
             return 0
 
@@ -98,7 +102,9 @@ class CountryDataScrapper(DocumentScrapper):
         return result
 
     def get_country_language(self):
-
+        """
+        Returns a list which contains a list of all languages that are spoken in a country.
+        """
         if self.__country_card is None:
             self.scrap_document()
 
@@ -107,6 +113,7 @@ class CountryDataScrapper(DocumentScrapper):
         return list(filter(lambda x: re.match("language", x) is None, map(lambda x: x.text, t)))
 
     def get_country_government(self):
+        """Return a list containing all the political characteristics of a country."""
         if self.__country_card is None:
             self.scrap_document()
 
@@ -123,6 +130,7 @@ class CountryDataScrapper(DocumentScrapper):
         return list(map(lambda x: x.text, t1.find_all("a")))
 
     def get_country_area(self):
+        """Extracts, using a regular expression that  """
 
         if self.__country_card is None:
             self.scrap_document()
@@ -163,7 +171,7 @@ class CountryDataScrapper(DocumentScrapper):
 
     def get_time_zone(self):
         """
-        Return the text field containing the keywords UTC or GMT.
+        Returns a list of all the timezones which appear in a country's teritory.
         """
         if self.__country_card is None:
             self.scrap_document()
@@ -195,7 +203,7 @@ class CountryDataScrapper(DocumentScrapper):
             else:
                 timezones = list(range(last, first + 1))
 
-            timezones = list(map(lambda x: plus_or_minus + str(x), timezones))
+            timezones = list(map(lambda x: "UTC" + plus_or_minus + str(x), timezones))
 
             return timezones
 
